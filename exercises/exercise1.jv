@@ -1,0 +1,75 @@
+// pipeline to transfer 
+// a Text file in the web 
+// to a SQLite file sink
+pipeline airportsDataPipeline {
+
+    // connecting the block airportsDataExtractor
+    // with the block airportsDataTextFileInterpreter
+    airportsDataExtractor -> airportsDataTextFileInterpreter;
+
+    // The output of the preceding block is hereby used 
+    // as input for the succeeding block
+
+    // Pipes can be further chained, 
+    // leading to an overview of the pipeline
+    airportsDataTextFileInterpreter
+        -> airportsDataCSVInterpreter 
+        -> airportsDataTableInterpreter
+        -> airportsDataLoader;
+
+
+    // Below the pipes, we define the blocks 
+    // that are connected by the pipes
+
+    // Blocks instantiate a blocktype by using the oftype keyword
+    // The blocktype defines the available properties that the block
+    // can use to specify the intended behavior of the block 
+    block airportsDataExtractor oftype HttpExtractor {
+
+        // Properties are assigned to concrete values.
+        // Here, we specify the URL where the file shall be downloaded from
+        url: "https://opendata.rhein-kreis-neuss.de/api/explore/v2.1/catalog/datasets/rhein-kreis-neuss-flughafen-weltweit/exports/csv?lang=en&timezone=Europe%2FBerlin&use_labels=true&delimiter=%3B";
+    }
+
+    // The HttpExtractor requires no input and produces a binary file as output
+    // This file has to be interpreted, e.g., as text file
+    block airportsDataTextFileInterpreter oftype TextFileInterpreter { }
+
+    // Next, we interpret the text file as sheet.
+    // A sheet only contains text cells and is useful for manipulating the shape of data before assigning more strict value types to cells.
+    block airportsDataCSVInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+
+    // As a next step, we interpret the sheet as a table by adding structure.
+    // We define a valuetype per column that specifies the data type of the column.
+    // Rows that include values that are not valid according to the their valuetypes are dropped automatically. 
+    // The data includes LFD Number, Name of airport, city, country, IATA, ICAO, Latitude Longitude, Timezone, DST, Timezone database, Geolocation
+    block airportsDataTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "Lfd. Nummer" oftype text,
+            "Name des Flughafens" oftype text,   
+            "Ort" oftype text,
+            "Land" oftype text,
+            "IATA" oftype text,
+            "ICAO" oftype text,
+            "Latitude" oftype text,
+            "Longitude" oftype text,
+            "Altitude" oftype integer,
+            "Zeitzone" oftype decimal,
+            "DST" oftype text,
+            "Zeitzonen-Datenbank" oftype text,
+            "geo_punkt" oftype text
+        ];
+    }
+
+    // As a last step, we load the table into a sink,
+    // here into a sqlite file.
+    // The structural information of the table is used
+    // to generate the correct table.
+    block airportsDataLoader oftype SQLiteLoader {
+        table: "airportsData";
+        file: "./airportsData.sqlite";
+    }
+}
