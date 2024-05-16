@@ -2,68 +2,33 @@
 
 ## Title
 <!-- Give your project a short title. -->
-MADE 23/24 - Correlation between demographic classes and the quality of life in a urban area
+MADE 23/24 - Correlation between CLimate change and Internal displacement around the world.
 
 ## Main Question
 
 <!-- Think about one main question you want to answer based on the data. -->
-To what extent does a demographic subdivision of an urban area correlate with the general quality of life?
-
+How does Climate change- that is rise in surface temeperatures affect or aggravate the Internal displacemnent around the world?
 ## Description
 
 <!-- Describe your data science project in max. 200 words. Consider writing about why and how you attempt it. -->
-Health has always been a fairly extensive discussed topic and with thematically more diverse treatment of its components, sub-areas such as mental health steadily gained general awareness over the last years. With this progress in thinking about personal health, the question about the term 'quality of life' has also arisen rather frequently. Being very situation-dependent and mostly subjective, it is yet a hard to define aspect of every person's life. This project therefore aims to investigate whether there are conclusions that can be drawn out of a possible correlation between demographic strata and their respective quality of life. Therefore, different demographic aspects such as age, income, housing situation, etc. shall be examined using sample data of the city of London in the years 2012 - 2016. The results of this project can provide information about a possible dependancy of the private situation on the quality of live on individual demographic groups.
 
+Climate change, particularly the rise in surface temperatures, significantly contributes to internal displacement worldwide. As temperatures increase, the frequency and severity of natural disasters such as floods, hurricanes, droughts, and wildfires also rise. These events can devastate communities, destroying homes and livelihoods, and forcing people to relocate within their countries. Additionally, gradual environmental changes like sea-level rise and desertification reduce the availability of habitable and arable land, pushing populations to migrate in search of better living conditions. These shifts often lead to overcrowding in safer areas, competition for resources, and potential conflict, further exacerbating the challenges of internal displacement.
 
 ## Datasources
 
 <!-- Describe each datasources you plan to use in a section. Use the prefix "DatasourceX" where X is the id of the datasource. -->
 
-### Datasource1: London Borough Demographics
-* Metadata URL: https://www.kaggle.com/datasets/marshald/london-boroughs/
-* Data URL: https://www.kaggle.com/datasets/marshald/london-boroughs/?select=london-borough-profiles-2016+Data+set.csv
+### Datasource1: Global Surface Teperatures
+* MetaData URL: [Kaggle](https://www.kaggle.com/datasets/berkeleyearth/climate-change-earth-surface-temperature-data)
 * Data Type: CSV
 
-The datasource profiles demographic data, such as labour market, economy and so on regarding the boroughs of London in the year of 2016.
+The dataset is very Huge ranging from 1700's and has various CSV files, the work here would be based on country, which country has the highest displacement rate, that would be judged on the basis of rising surface temperatures.
 
-### Datasource2: London Crime Data
-* Metadata URL: https://www.kaggle.com/datasets/jboysen/london-crime
-* Data URL: https://www.kaggle.com/datasets/jboysen/london-crime?select=london_crime_by_lsoa.csv
+### Datasource2: Number if Internally Displaced people by the country
+* MetaData URL: [Natural Disasters](https://ourworldindata.org/natural-disasters)
 * Data Type: CSV
 
-Crime in major metropolitan areas, such as London, occurs in distinct patterns. This data covers the number of criminal reports by month, LSOA borough, and major/minor category from Jan 2008-Dec 2016.
-
-### Datasource3: Housing in London
-* Metadata URL: https://www.kaggle.com/datasets/justinas/housing-in-london
-* Data URL: https://www.kaggle.com/datasets/justinas/housing-in-london?select=housing_in_london_yearly_variables.csv
-* Data Type: CSV
-
-This data contains information about the housing market of London from the years 1999 until 2019.
-> The data has been extracted from London Datastore. It is released under UK Open Government License v2 and v3. The underlining datasets can be found here:
-> * https://data.london.gov.uk/dataset/uk-house-price-index
-> * https://data.london.gov.uk/dataset/number-and-density-of-dwellings-by-borough
-> * https://data.london.gov.uk/dataset/subjective-personal-well-being-borough
-> * https://data.london.gov.uk/dataset/household-waste-recycling-rates-borough
-> * https://data.london.gov.uk/dataset/earnings-place-residence-borough
-> * https://data.london.gov.uk/dataset/recorded_crime_summary
-> * https://data.london.gov.uk/dataset/jobs-and-job-density-borough
-> * https://data.london.gov.uk/dataset/ons-mid-year-population-estimates-custom-age-tables
+This dataset represent the number of intrnally displaced people from 2008-2023
 
 ## Work Packages
 
-<!-- List of work packages ordered sequentially, each pointing to an issue with more details. -->
-
-1. Retrieve data sets and set up data pipeline including system tests [#6][i6] -- **Completed**
-2. Setup CI for project [#7][i7] -- **Completed**
-3. Find suitable demographic classifiers [#1][i1] -- **Completed**
-4. Define parameters to measure quality of life [#2][i2] -- **Completed**
-5. Map demographic classifiers towards the quality of life parameters [#3][i3] -- **Completed**
-6. Analyze the mappings [#4][i4] -- **Completed**
- 
-
-[i1]: https://github.com/julian-m10/made-2324/issues/1
-[i2]: https://github.com/julian-m10/made-2324/issues/2
-[i3]: https://github.com/julian-m10/made-2324/issues/3
-[i4]: https://github.com/julian-m10/made-2324/issues/4
-[i6]: https://github.com/julian-m10/made-2324/issues/6
-[i7]: https://github.com/julian-m10/made-2324/issues/8
