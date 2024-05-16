@@ -2,7 +2,7 @@
 
 ## Title
 <!-- Give your project a short title. -->
-MADE 23/24 - Correlation between CLimate change and Internal displacement around the world.
+MADE SoSE-24 - Correlation between CLimate change and Internal displacement around the world.
 
 ## Main Question
 
