@@ -28,7 +28,7 @@ The dataset is very Huge ranging from 1700's and has various CSV files, the work
 * MetaData URL: [Natural Disasters](https://ourworldindata.org/natural-disasters)
 * Data Type: CSV
 
-This dataset represent the number of intrnally displaced people from 2008-2023
+This dataset represent the number of internally displaced people from 2008-2023
 
 ## Work Packages
 
