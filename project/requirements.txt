@@ -1,4 +1,5 @@
 selenium
-selenium webdriver_manager pandas
+webdriver_manager 
+pandas
 sqlite3
 kaggle
