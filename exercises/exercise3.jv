@@ -1,8 +1,6 @@
 pipeline DataPipeline {
 
     DataExtractor
-        -> DataTextFileInterpreter
-        -> DataCSVInterpreter 
         -> RowDeleter
         -> AddHeader
         -> RenameHeader
@@ -10,17 +8,8 @@ pipeline DataPipeline {
         -> DataLoader;
 
 
-    block DataExtractor oftype HttpExtractor {
+    block DataExtractor oftype CSVExtractor {
         url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46131-0014_00.csv";
-    }
-
-
-    block DataTextFileInterpreter oftype TextFileInterpreter { 
-        encoding: "utf8";
-    }
-
-
-    block DataCSVInterpreter oftype CSVInterpreter {
         delimiter: ";";
     }
 
