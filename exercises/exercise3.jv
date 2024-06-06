@@ -1,0 +1,87 @@
+pipeline DataPipeline {
+
+    DataExtractor
+        -> DataTextFileInterpreter
+        -> DataCSVInterpreter 
+        -> RowDeleter
+        -> AddHeader
+        -> RenameHeader
+        -> DataTableInterpreter
+        -> DataLoader;
+
+
+    block DataExtractor oftype HttpExtractor {
+        url: "https://www-genesis.destatis.de/genesis/downloads/00/tables/46131-0014_00.csv";
+    }
+
+
+    block DataTextFileInterpreter oftype TextFileInterpreter { 
+        encoding: "utf8";
+    }
+
+
+    block DataCSVInterpreter oftype CSVInterpreter {
+        delimiter: ";";
+    }
+
+
+     block RowDeleter oftype RowDeleter {
+        delete: [row 1, row 2, row 3, row 4, row 5, row 6, row 7, row 41337, row 41338, row 41339];
+    }
+
+
+    block AddHeader oftype CellWriter {
+        at: range A1:E1;
+        write: ["year", "month", "goods_id", "goods_name", "goods_source"]; 
+    }
+
+
+    block RenameHeader oftype CellWriter {
+        at: range AT1:AU1;
+        write: ["abroad", "total"]; 
+    }
+
+
+    block DataTableInterpreter oftype TableInterpreter {
+        header: true;
+        columns: [
+            "year" oftype integer,
+            "month" oftype month_filter,
+            "goods_id" oftype goods_id_filter,
+            "goods_name" oftype text,
+            "goods_source" oftype text,
+            "abroad" oftype integer,
+            "total" oftype integer
+        ];
+    }
+
+
+    block DataLoader oftype SQLiteLoader {
+        table: "goods";
+        file: "./goodsTransportedByTrain.sqlite";
+    }
+
+
+valuetype goods_id_filter oftype text {
+    constraints: [
+        goods_id_regex,
+    ];
+}
+
+
+constraint goods_id_regex on text:
+    value matches /^NST7-[A-Z0-9]{3}$/;
+
+
+valuetype month_filter oftype text {
+    constraints: [
+        month_list_deutsch,
+    ];
+}
+
+ constraint month_list_deutsch oftype AllowlistConstraint {
+   allowlist: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
+ }
+
+
+}
