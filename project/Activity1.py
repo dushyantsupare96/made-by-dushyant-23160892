@@ -17,7 +17,7 @@ WORKING_CSV_FILE = 'GlobalLandTemperaturesByCountry.csv'
 DATA_DIRECTORY = os.path.expanduser('./data')
 if not os.path.exists(DATA_DIRECTORY):
     os.makedirs(DATA_DIRECTORY)
-
+PROJECT_DIRECTORY = os.path.expanduser('./project')
 # Dataset Fetching would be done by this function from kaggle 
 def get_dataset(dataset_url):
     local_directory_name = os.path.join(DATA_DIRECTORY, dataset_url.split('/')[-1]) # This will make a directory by the name of the dataset in local environment
@@ -85,5 +85,45 @@ def main():
     else:
         print(f"{WORKING_CSV_FILE} not found in the downloaded dataset")
 
-if __name__ == "__main__":
+# Validate the pipeline using a test function
+def system_test_pipeline():
     main()
+
+    kaggle_database_path = os.path.join(DATA_DIRECTORY, 'GlobalLandTemperaturesByCountry.sqlite')
+    print(f"berkeley database path {kaggle_database_path}")
+
+    ourworld_database_path = os.path.join(DATA_DIRECTORY, 'internally-displaced-persons-from-disasters.sqlite')
+    print(f"kaggle database path {ourworld_database_path}")
+
+    if os.path.exists(kaggle_database_path):
+        print(f"Berkeley database file found at path: {kaggle_database_path}")
+    else: 
+        print(f"Berkeley database file {kaggle_database_path} does not exist.")
+
+    if os.path.exists(ourworld_database_path):
+        print(f"Kaggle database file found at path: {ourworld_database_path}")
+    else: 
+        print(f"Kaggle database file {ourworld_database_path} does not exist.")
+
+
+    with sqlite3.connect(kaggle_database_path) as conn_sql:
+        cursor = conn_sql.cursor()
+        cursor.execute("SELECT COUNT(*) FROM data")
+        row_count = cursor.fetchone()[0]
+        if row_count > 0:
+            print(f"Success: {row_count} rows found in Berkeley database table")
+        else:
+            print("Failure: Berkeley database table is empty.")
+
+    with sqlite3.connect(ourworld_database_path) as conn_sql:
+        cursor = conn_sql.cursor()
+        cursor.execute("SELECT COUNT(*) FROM data")
+        row_count = cursor.fetchone()[0]
+        if row_count > 0:
+            print(f"Success: {row_count} rows found in Kaggle database table")
+        else:
+            print("Failure: Kaggle database table is empty.")
+
+
+if __name__ == "__main__":
+    system_test_pipeline()
