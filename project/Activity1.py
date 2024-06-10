@@ -120,7 +120,7 @@ def system_test_pipeline():
         cursor.execute("SELECT COUNT(*) FROM data")
         row_count = cursor.fetchone()[0]
         if row_count > 0:
-            print(f"Success: {row_count} rows found in Kaggle database table")
+            print(f"Success: {row_count} rows found in OurWorld database table")
         else:
             print("Failure: OurWorld database table is empty.")
 
