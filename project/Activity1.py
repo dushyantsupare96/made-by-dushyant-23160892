@@ -93,7 +93,7 @@ def system_test_pipeline():
     print(f"berkeley database path {kaggle_database_path}")
 
     ourworld_database_path = os.path.join(DATA_DIRECTORY, 'internally-displaced-persons-from-disasters.sqlite')
-    print(f"kaggle database path {ourworld_database_path}")
+    print(f"OurWorld database path {ourworld_database_path}")
 
     if os.path.exists(kaggle_database_path):
         print(f"Berkeley database file found at path: {kaggle_database_path}")
@@ -101,9 +101,9 @@ def system_test_pipeline():
         print(f"Berkeley database file {kaggle_database_path} does not exist.")
 
     if os.path.exists(ourworld_database_path):
-        print(f"Kaggle database file found at path: {ourworld_database_path}")
+        print(f"OurWorld database file found at path: {ourworld_database_path}")
     else: 
-        print(f"Kaggle database file {ourworld_database_path} does not exist.")
+        print(f"OurWorld database file {ourworld_database_path} does not exist.")
 
 
     with sqlite3.connect(kaggle_database_path) as conn_sql:
@@ -122,7 +122,7 @@ def system_test_pipeline():
         if row_count > 0:
             print(f"Success: {row_count} rows found in Kaggle database table")
         else:
-            print("Failure: Kaggle database table is empty.")
+            print("Failure: OurWorld database table is empty.")
 
 
 if __name__ == "__main__":
