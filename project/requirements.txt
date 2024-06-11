@@ -1,5 +1,5 @@
 selenium
 webdriver_manager 
 pandas
-sqlite3
 kaggle
+pytest
