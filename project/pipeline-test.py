@@ -5,7 +5,10 @@ import sqlite3
 import pytest
 import pandas as pd
 from unittest import mock
-from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, DATA_DIRECTORY
+
+# Mock KaggleApi import and Kaggle functionality
+with mock.patch.dict('sys.modules', {'kaggle.api.kaggle_api_extended': mock.Mock()}):
+    from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, DATA_DIRECTORY
 
 @pytest.fixture
 def setup_mock_datasets():
@@ -49,12 +52,10 @@ def test_transform_and_clean_kaggle_data(mock_transform, setup_mock_datasets):
 
     # Define what the mock should return
     mock_transform.return_value = pd.DataFrame({
-        'dt': pd.to_datetime(['2009-01-01', '2010-02-01', '2011-03-01']),
-        'Country': ['Mockland', 'Mockland', 'Mockland'],
-        'AverageTemperature': [5.0, 6.0, 7.0],
-        'year': [2009, 2010, 2011],
-        'month': [1, 2, 3],
-        'total_incidents': [1, 1, 1]
+        'dt': ['2009-01-01', '2010-02-01', '2011-03-01'],
+        'AverageTemperature': [6.2, 7.3, 8.4],
+        'AverageTemperatureUncertainty': [0.4, 0.5, 0.6],
+        'Country': ['Testland', 'Testland', 'Testland']
     })
     
     # Call the function
@@ -72,6 +73,7 @@ def test_transform_and_clean_displacement_data(mock_transform, setup_mock_datase
     # Define what the mock should return
     mock_transform.return_value = pd.DataFrame({
         'Entity': ['MockCountry', 'MockCountry', 'MockCountry'],
+        'Code': ['TC', 'TC', 'TC'],
         'Year': [2008, 2009, 2010],
         'Internally displaced persons': [2000, 2000, 2000]
     })
@@ -91,6 +93,7 @@ def test_create_sqlite_from_dataframe(mock_create_db, setup_mock_datasets):
     # Prepare the transformed data
     transformed_data = pd.DataFrame({
         'Entity': ['MockCountry', 'MockCountry', 'MockCountry'],
+        'Code': ['TC', 'TC', 'TC'],
         'Year': [2008, 2009, 2010],
         'Internally displaced persons': [2000, 2000, 2000]
     })
