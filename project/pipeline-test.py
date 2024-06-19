@@ -1,6 +1,7 @@
 import os
 import pytest
 import pandas as pd
+import sqlite3
 from unittest import mock
 
 # Mock the import of KaggleApi from the kaggle package
