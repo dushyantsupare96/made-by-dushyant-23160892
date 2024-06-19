@@ -1,13 +1,11 @@
 import os
-import sqlite3
 import pytest
 import pandas as pd
 from unittest import mock
-from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, DATA_DIRECTORY
 
-# Mock KaggleApi import and Kaggle functionality
+# Mock the import of KaggleApi from the kaggle package
 with mock.patch.dict('sys.modules', {'kaggle.api.kaggle_api_extended': mock.Mock()}):
-    from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, DATA_DIRECTORY
+    from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, get_dataset, DATA_DIRECTORY
 
 @pytest.fixture
 def setup_mock_datasets():
@@ -42,6 +40,19 @@ def setup_mock_datasets():
         os.remove(berkeley_db_path)
     if os.path.exists(kaggle_db_path):
         os.remove(kaggle_db_path)
+
+@mock.patch('pipeline.get_dataset')
+def test_get_dataset(mock_get_dataset, setup_mock_datasets):
+    test_kaggle_csv, _ = setup_mock_datasets
+    
+    # Mock return value to simulate local directory
+    mock_get_dataset.return_value = os.path.dirname(test_kaggle_csv)
+    
+    # Call the function
+    local_directory = get_dataset('mock/dataset/url', None)  # Pass None for kaggleApiInit in test
+    
+    # Verify the return value
+    assert local_directory == os.path.dirname(test_kaggle_csv), "get_dataset did not return the correct local directory"
 
 @mock.patch('pipeline.transform_data_and_clean_from_kaggle')
 def test_transform_and_clean_kaggle_data(mock_transform, setup_mock_datasets):
