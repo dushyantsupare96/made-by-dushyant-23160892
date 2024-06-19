@@ -4,6 +4,7 @@ import pandas as pd
 import sqlite3
 from unittest import mock
 
+os.environ['TEST_ENVIRONMENT'] = 'true'
 # Mock the import of KaggleApi from the kaggle package
 with mock.patch.dict('sys.modules', {'kaggle.api.kaggle_api_extended': mock.Mock()}):
     from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, get_dataset, DATA_DIRECTORY

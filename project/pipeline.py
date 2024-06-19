@@ -11,7 +11,8 @@ PROJECT_DIRECTORY = os.path.expanduser('./project')
 # Dataset Fetching would be done by this function from kaggle 
 def get_dataset(dataset_url:str, kaggleApiInit : KaggleApi) -> str:
     local_directory_name = os.path.join(DATA_DIRECTORY, dataset_url.split('/')[-1]) # This will make a directory by the name of the dataset in local environment
-    kaggleApiInit.dataset_download_files(dataset_url, path=local_directory_name, unzip=True)
+    if os.getenv('TEST_ENVIRONMENT') != 'true':
+        kaggleApiInit.dataset_download_files(dataset_url, path=local_directory_name, unzip=True)
     return local_directory_name
 
 # Initial Data cleaning and transformation steps
