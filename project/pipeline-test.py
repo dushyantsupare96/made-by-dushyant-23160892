@@ -1,10 +1,9 @@
-# test_data_pipeline.py
-
 import os
 import sqlite3
 import pytest
 import pandas as pd
 from unittest import mock
+from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, DATA_DIRECTORY
 
 # Mock KaggleApi import and Kaggle functionality
 with mock.patch.dict('sys.modules', {'kaggle.api.kaggle_api_extended': mock.Mock()}):
@@ -12,7 +11,7 @@ with mock.patch.dict('sys.modules', {'kaggle.api.kaggle_api_extended': mock.Mock
 
 @pytest.fixture
 def setup_mock_datasets():
-    # Setup test sample CSVs
+    """Fixture to setup and teardown mock datasets."""
     test_kaggle_csv = os.path.join(DATA_DIRECTORY, 'test_kaggle_sample.csv')
     test_displacement_csv = os.path.join(DATA_DIRECTORY, 'test_displacement_sample.csv')
 
@@ -35,10 +34,8 @@ def setup_mock_datasets():
     yield test_kaggle_csv, test_displacement_csv
 
     # Teardown: Cleanup created files
-    if os.path.exists(test_kaggle_csv):
-        os.remove(test_kaggle_csv)
-    if os.path.exists(test_displacement_csv):
-        os.remove(test_displacement_csv)
+    os.remove(test_kaggle_csv)
+    os.remove(test_displacement_csv)
     berkeley_db_path = os.path.join(DATA_DIRECTORY, 'GlobalLandTemperaturesByCountry.sqlite')
     kaggle_db_path = os.path.join(DATA_DIRECTORY, 'internally-displaced-persons-from-disasters.sqlite')
     if os.path.exists(berkeley_db_path):
@@ -55,7 +52,7 @@ def test_transform_and_clean_kaggle_data(mock_transform, setup_mock_datasets):
         'dt': ['2009-01-01', '2010-02-01', '2011-03-01'],
         'AverageTemperature': [6.2, 7.3, 8.4],
         'AverageTemperatureUncertainty': [0.4, 0.5, 0.6],
-        'Country': ['Testland', 'Testland', 'Testland']
+        'Country': ['Mockland', 'Mockland', 'Mockland']
     })
     
     # Call the function
@@ -120,8 +117,7 @@ def test_create_sqlite_from_dataframe(mock_create_db, setup_mock_datasets):
         assert count == len(transformed_data), f"SQLite database table does not contain expected number of rows, found {count}"
 
     # Cleanup
-    if os.path.exists(db_path):
-        os.remove(db_path)
+    os.remove(db_path)
 
 if __name__ == "__main__":
     pytest.main()
