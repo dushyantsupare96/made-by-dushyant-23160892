@@ -1,7 +1,6 @@
 import os
 import pytest
 import pandas as pd
-import sqlite3
 from unittest import mock
 
 # Mock the import of KaggleApi from the kaggle package
@@ -43,14 +42,21 @@ def setup_mock_datasets():
         os.remove(kaggle_db_path)
 
 @mock.patch('pipeline.get_dataset')
-def test_get_dataset(mock_get_dataset, setup_mock_datasets):
+@mock.patch('kaggle.api.kaggle_api_extended.KaggleApi')
+def test_get_dataset(mock_kaggle_api, mock_get_dataset, setup_mock_datasets):
     test_kaggle_csv, _ = setup_mock_datasets
+
+    # Mock KaggleApi instance and method
+    mock_kaggle_api_instance = mock_kaggle_api.return_value
+    mock_kaggle_api_instance.authenticate.return_value = None
     
     # Mock return value to simulate local directory
     mock_get_dataset.return_value = os.path.dirname(test_kaggle_csv)
     
     # Call the function
-    local_directory = get_dataset('mock/dataset/url', None)  # Pass None for kaggleApiInit in test
+    dataset_url = 'mock/dataset/url'
+    kaggle_api_instance = mock_kaggle_api()
+    local_directory = get_dataset(dataset_url, kaggle_api_instance)
     
     # Verify the return value
     assert local_directory == os.path.dirname(test_kaggle_csv), "get_dataset did not return the correct local directory"
