@@ -1,13 +1,21 @@
 import os
-import pytest
 import pandas as pd
 import sqlite3
+import pytest
 from unittest import mock
 
+# Set environment variable to indicate testing environment
 os.environ['TEST_ENVIRONMENT'] = 'true'
-# Mock the import of KaggleApi from the kaggle package
+
+# Mock KaggleApi import to prevent real API calls
 with mock.patch.dict('sys.modules', {'kaggle.api.kaggle_api_extended': mock.Mock()}):
-    from pipeline import transform_data_and_clean_from_kaggle, transform_data_and_clean_from_csv, create_sqlite_from_dataframe, get_dataset, DATA_DIRECTORY
+    from pipeline import (
+        get_dataset,
+        transform_data_and_clean_from_kaggle,
+        transform_data_and_clean_from_csv,
+        create_sqlite_from_dataframe,
+        DATA_DIRECTORY
+    )
 
 @pytest.fixture
 def setup_mock_datasets():
@@ -36,24 +44,18 @@ def setup_mock_datasets():
     # Teardown: Cleanup created files
     os.remove(test_kaggle_csv)
     os.remove(test_displacement_csv)
-    berkeley_db_path = os.path.join(DATA_DIRECTORY, 'GlobalLandTemperaturesByCountry.sqlite')
-    kaggle_db_path = os.path.join(DATA_DIRECTORY, 'internally-displaced-persons-from-disasters.sqlite')
-    if os.path.exists(berkeley_db_path):
-        os.remove(berkeley_db_path)
-    if os.path.exists(kaggle_db_path):
-        os.remove(kaggle_db_path)
 
 @mock.patch('pipeline.get_dataset')
 @mock.patch('kaggle.api.kaggle_api_extended.KaggleApi')
 def test_get_dataset(mock_kaggle_api, mock_get_dataset, setup_mock_datasets):
     test_kaggle_csv, _ = setup_mock_datasets
 
-    # Mock KaggleApi instance and method
-    mock_kaggle_api_instance = mock_kaggle_api.return_value
-    mock_kaggle_api_instance.authenticate.return_value = None
-    
     # Mock return value to simulate local directory
     mock_get_dataset.return_value = os.path.dirname(test_kaggle_csv)
+
+    # Mock KaggleApi instance
+    mock_kaggle_api_instance = mock_kaggle_api.return_value
+    mock_kaggle_api_instance.dataset_download_files.return_value = None
     
     # Call the function
     dataset_url = 'mock/dataset/url'
