@@ -46,6 +46,11 @@ def transform_data_and_clean_from_csv(file_path):
     if 'Code' in df.columns:
         df = df.drop(columns=['Code'])
     print ("inside csv transformation")
+    if 'Entity' in df.columns and 'Year' in df.columns:
+        df.rename(columns={
+            'Entity': 'Country',
+            'Internally displaced persons, new displacement associated with disasters (number of cases)': 'Displacement'
+        }, inplace=True)
     print(df.head())
     return df
 # Take this dataframe into sqllite file

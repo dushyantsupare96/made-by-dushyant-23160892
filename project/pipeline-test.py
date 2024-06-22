@@ -1,145 +1,133 @@
 import os
-import pandas as pd
-import sqlite3
 import pytest
-from unittest import mock
+import pandas as pd
+from unittest.mock import MagicMock, patch
+from kaggle.api.kaggle_api_extended import KaggleApi
+import sqlite3
 
-# Set environment variable to indicate testing environment
-os.environ['TEST_ENVIRONMENT'] = 'true'
+from pipeline import (
+    DATA_DIRECTORY,
+    get_dataset,
+    transform_data_and_clean_from_kaggle,
+    transform_data_and_clean_from_csv,
+    create_sqlite_from_dataframe,
+    main
+)
 
-# Mock KaggleApi import to prevent real API calls
-with mock.patch.dict('sys.modules', {'kaggle.api.kaggle_api_extended': mock.Mock()}):
-    from pipeline import (
-        get_dataset,
-        transform_data_and_clean_from_kaggle,
-        transform_data_and_clean_from_csv,
-        create_sqlite_from_dataframe,
-        DATA_DIRECTORY
-    )
+def create_kaggle_sample_dataframe():
+    data = {
+        'Country': ['CountryA', 'CountryB', 'CountryC'],
+        'AverageTemperature': [23.45, 19.32, 21.56],
+        'AverageTemperatureUncertainty': [0.8, 1.2, 0.9],
+        'dt': ['2010-01-01', '2010-01-01', '2010-01-01']
+    }
+    df = pd.DataFrame(data)
+    return df
+
+def create_displacement_sample_dataframe():
+    data = {
+        'Entity': ['CountryA', 'CountryB', 'CountryC'],
+        'Code': ['CTA', 'CTB', 'CTC'],
+        'Year': [2008, 2009, 2010],
+        'Internally displaced persons, new displacement associated with disasters (number of cases)': [3400, 2500, 4100]
+    }
+    df = pd.DataFrame(data)
+    return df
 
 @pytest.fixture
-def setup_mock_datasets():
-    """Fixture to setup and teardown mock datasets."""
-    test_kaggle_csv = os.path.join(DATA_DIRECTORY, 'test_kaggle_sample.csv')
-    test_displacement_csv = os.path.join(DATA_DIRECTORY, 'test_displacement_sample.csv')
+def kaggle_sample_csv_file(tmp_path):
+    df = create_kaggle_sample_dataframe()
+    csv_file = tmp_path / "kaggle_sample.csv"
+    df.to_csv(csv_file, index=False)
+    return csv_file
 
-    test_kaggle_data = pd.DataFrame({
-        'dt': ['2009-01-01', '2010-02-01', '2011-03-01'],
-        'AverageTemperature': [6.2, 7.3, 8.4],
-        'AverageTemperatureUncertainty': [0.4, 0.5, 0.6],
-        'Country': ['Testland', 'Testland', 'Testland']
-    })
-    test_kaggle_data.to_csv(test_kaggle_csv, index=False)
+@pytest.fixture
+def displacement_sample_csv_file(tmp_path):
+    df = create_displacement_sample_dataframe()
+    csv_file = tmp_path / "displacement_sample.csv"
+    df.to_csv(csv_file, index=False)
+    return csv_file
+
+@pytest.fixture
+def sample_sqlite_file(tmp_path):
+    sqlite_file = tmp_path / "sample.sqlite"
+    return sqlite_file
+
+@pytest.fixture
+def kaggle_api_mock():
+    return MagicMock(KaggleApi)
+
+@pytest.fixture
+def makedirs_mock():
+    with patch('os.makedirs') as mock:
+        yield mock
+
+@pytest.fixture
+def path_exists_mock():
+    with patch('os.path.exists', return_value=True) as mock:
+        yield mock
+
+@pytest.fixture
+def kaggle_read_csv_mock():
+    with patch('pandas.read_csv', return_value=create_kaggle_sample_dataframe()) as mock:
+        yield mock
+
+@pytest.fixture
+def displacement_read_csv_mock():
+    with patch('pandas.read_csv', return_value=create_displacement_sample_dataframe()) as mock:
+        yield mock
+
+@pytest.fixture
+def sqlite_mock():
+    with patch('sqlite3.connect') as mock:
+        yield mock
+
+def test_get_dataset(kaggle_api_mock, makedirs_mock):
+    dataset_url = 'berkeleyearth/climate-change-earth-surface-temperature-data'
+    expected_path = os.path.join(DATA_DIRECTORY, dataset_url.split('/')[-1])
+
+    with patch('os.getenv', return_value='false'):
+        result = get_dataset(dataset_url, kaggle_api_mock)
+
+    kaggle_api_mock.dataset_download_files.assert_called_once_with(dataset_url, path=expected_path, unzip=True)
+    assert result == expected_path
+
+def test_transform_data_and_clean_from_kaggle(kaggle_read_csv_mock, kaggle_sample_csv_file):
+    df = transform_data_and_clean_from_kaggle(kaggle_sample_csv_file)
+
+    assert not df.empty
+    assert 'Country' in df.columns
+    assert df['AverageTemperature'].dtype == float
+    assert df['AverageTemperatureUncertainty'].dtype == float
+
+def test_transform_data_and_clean_from_csv(displacement_read_csv_mock, displacement_sample_csv_file):
+    df = transform_data_and_clean_from_csv(displacement_sample_csv_file)
+
+    assert not df.empty
+    assert 'Country' in df.columns
+    assert 'Displacement' in df.columns
+
+@pytest.mark.filterwarnings("ignore::UserWarning")
+def test_create_sqlite_from_dataframe(sqlite_mock, sample_sqlite_file):
+    df = create_kaggle_sample_dataframe()
+    db_filename = sample_sqlite_file.name
     
-    test_displacement_data = pd.DataFrame({
-        'Entity': ['TestCountry', 'TestCountry', 'TestCountry'],
-        'Code': ['TC', 'TC', 'TC'],
-        'Year': [2008, 2009, 2010],
-        'Internally displaced persons': [1000, 1000, 1000]
-    })
-    test_displacement_data.to_csv(test_displacement_csv, index=False)
+    create_sqlite_from_dataframe(df, db_filename)
     
-    yield test_kaggle_csv, test_displacement_csv
-
-    # Teardown: Cleanup created files
-    os.remove(test_kaggle_csv)
-    os.remove(test_displacement_csv)
-
-@mock.patch('pipeline.get_dataset')
-@mock.patch('kaggle.api.kaggle_api_extended.KaggleApi')
-def test_get_dataset(mock_kaggle_api, mock_get_dataset, setup_mock_datasets):
-    test_kaggle_csv, _ = setup_mock_datasets
-
-    # Mock return value to simulate local directory
-    mock_get_dataset.return_value = os.path.dirname(test_kaggle_csv)
-
-    # Mock KaggleApi instance
-    mock_kaggle_api_instance = mock_kaggle_api.return_value
-    mock_kaggle_api_instance.dataset_download_files.return_value = None
+    sqlite_mock.assert_called_once_with(os.path.join(DATA_DIRECTORY, db_filename))
+    conn = sqlite_mock.return_value
     
-    # Call the function
-    dataset_url = 'mock/dataset/url'
-    kaggle_api_instance = mock_kaggle_api()
-    local_directory = get_dataset(dataset_url, kaggle_api_instance)
+    conn.cursor.return_value.execute.assert_called()
     
-    # Verify the return value
-    assert local_directory == os.path.dirname(test_kaggle_csv), "get_dataset did not return the correct local directory"
+    # Check that commit was called 
+    assert conn.commit.call_count == 3
+    conn.close.assert_called_once()
 
-@mock.patch('pipeline.transform_data_and_clean_from_kaggle')
-def test_transform_and_clean_kaggle_data(mock_transform, setup_mock_datasets):
-    test_kaggle_csv, _ = setup_mock_datasets
-
-    # Define what the mock should return
-    mock_transform.return_value = pd.DataFrame({
-        'dt': ['2009-01-01', '2010-02-01', '2011-03-01'],
-        'AverageTemperature': [6.2, 7.3, 8.4],
-        'AverageTemperatureUncertainty': [0.4, 0.5, 0.6],
-        'Country': ['Mockland', 'Mockland', 'Mockland']
-    })
-    
-    # Call the function
-    transformed_data = transform_data_and_clean_from_kaggle(test_kaggle_csv)
-    
-    # Verify the transformation
-    assert not transformed_data.isnull().values.any(), "Transformed Kaggle data contains null values"
-    assert not transformed_data.duplicated().values.any(), "Transformed Kaggle data contains duplicate rows"
-    assert all(transformed_data['Country'] == 'Mockland'), "Transformed Kaggle data did not mock 'Country' correctly"
-
-@mock.patch('pipeline.transform_data_and_clean_from_csv')
-def test_transform_and_clean_displacement_data(mock_transform, setup_mock_datasets):
-    _, test_displacement_csv = setup_mock_datasets
-
-    # Define what the mock should return
-    mock_transform.return_value = pd.DataFrame({
-        'Entity': ['MockCountry', 'MockCountry', 'MockCountry'],
-        'Code': ['TC', 'TC', 'TC'],
-        'Year': [2008, 2009, 2010],
-        'Internally displaced persons': [2000, 2000, 2000]
-    })
-    
-    # Call the function
-    transformed_data = transform_data_and_clean_from_csv(test_displacement_csv)
-    
-    # Verify the transformation
-    assert not transformed_data.isnull().values.any(), "Transformed displacement data contains null values"
-    assert not transformed_data.duplicated().values.any(), "Transformed displacement data contains duplicate rows"
-    assert all(transformed_data['Entity'] == 'MockCountry'), "Transformed displacement data did not mock 'Entity' correctly"
-
-@mock.patch('pipeline.create_sqlite_from_dataframe')
-def test_create_sqlite_from_dataframe(mock_create_db, setup_mock_datasets):
-    _, test_displacement_csv = setup_mock_datasets
-
-    # Prepare the transformed data
-    transformed_data = pd.DataFrame({
-        'Entity': ['MockCountry', 'MockCountry', 'MockCountry'],
-        'Code': ['TC', 'TC', 'TC'],
-        'Year': [2008, 2009, 2010],
-        'Internally displaced persons': [2000, 2000, 2000]
-    })
-
-    # Define what the mock should do
-    def mock_db_effect(df, filename):
-        db_path = os.path.join(DATA_DIRECTORY, filename)
-        with sqlite3.connect(db_path) as conn:
-            df.to_sql('data', conn, if_exists='replace', index=False)
-    mock_create_db.side_effect = mock_db_effect
-
-    # Call the function to create SQLite database
-    db_filename = 'test_displacement.sqlite'
-    create_sqlite_from_dataframe(transformed_data, db_filename)
-
-    # Verify SQLite database
-    db_path = os.path.join(DATA_DIRECTORY, db_filename)
-    assert os.path.exists(db_path), f"SQLite database file {db_path} does not exist"
-
-    with sqlite3.connect(db_path) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM data")
-        count = cursor.fetchone()[0]
-        assert count == len(transformed_data), f"SQLite database table does not contain expected number of rows, found {count}"
-
-    # Cleanup
-    os.remove(db_path)
-
-if __name__ == "__main__":
-    pytest.main()
+# Test the main function with both datasets
+def test_main(kaggle_api_mock, path_exists_mock, kaggle_read_csv_mock, displacement_read_csv_mock, sqlite_mock, makedirs_mock):
+    with patch('pipeline.get_dataset', return_value='mock_directory'):
+        with patch('pipeline.transform_data_and_clean_from_kaggle', return_value=create_kaggle_sample_dataframe()):
+            with patch('pipeline.transform_data_and_clean_from_csv', return_value=create_displacement_sample_dataframe()):
+                with patch('pipeline.create_sqlite_from_dataframe') as create_sqlite_mock:
+                    main()
+                    create_sqlite_mock.assert_called()
