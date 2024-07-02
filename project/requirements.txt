@@ -3,3 +3,5 @@ webdriver_manager
 pandas
 kaggle
 pytest
+matplotlib
+seaborn

@@ -7,12 +7,12 @@ MADE SoSE-24 - Correlation between Climate change and Internal displacement arou
 ## Main Question
 
 <!-- Think about one main question you want to answer based on the data. -->
-How does Climate change- that is rise in surface temeperatures affect or aggravate the Internal displacemnent around the world?
+How does Climate change- that is rise in surface temeperatures affect or aggravate the Internal displacemnent in South Asia? Is there any relation between these two factors?
 ## Description
 
 <!-- Describe your data science project in max. 200 words. Consider writing about why and how you attempt it. -->
 
-Climate change, particularly the rise in surface temperatures, significantly contributes to internal displacement worldwide. As temperatures increase, the frequency and severity of natural disasters such as floods, hurricanes, droughts, and wildfires also rise. These events can devastate communities, destroying homes and livelihoods, and forcing people to relocate within their countries. Additionally, gradual environmental changes like sea-level rise and desertification reduce the availability of habitable and arable land, pushing populations to migrate in search of better living conditions. These shifts often lead to overcrowding in safer areas, competition for resources, and potential conflict, further exacerbating the challenges of internal displacement.
+Climate change, particularly the rise in surface temperatures, significantly contributes to internal displacement worldwide. As temperatures increase, the frequency and severity of natural disasters such as floods, hurricanes, droughts, and wildfires also rise. These events can devastate communities, destroying homes and livelihoods, and forcing people to relocate within their countries. Additionally, gradual environmental changes like sea-level rise and desertification reduce the availability of habitable and arable land, pushing populations to migrate in search of better living conditions. These shifts often lead to overcrowding in safer areas, competition for resources, and potential conflict, further exacerbating the challenges of internal displacement. The focus of this project is to find out the relation between Surface temperature rise and internal displacement in South Asia from years 2008-2013
 
 ## Datasources
 
