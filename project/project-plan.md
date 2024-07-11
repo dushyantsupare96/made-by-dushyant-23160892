@@ -2,7 +2,7 @@
 
 ## Title
 <!-- Give your project a short title. -->
-MADE SoSE-24 - Correlation between Climate change and Internal displacement around the world.
+MADE SoSE-24 - Correlation between Climate change and Internal displacement around the South Asia.
 
 ## Main Question
 
